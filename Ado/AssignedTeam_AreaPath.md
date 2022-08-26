@@ -1,4 +1,6 @@
-TP > ADO
+### TP > ADO
+
+```js
 const workSharing = context.getService("workSharing/v2");
 const tpApiV2 = context.getService("targetprocess/api/v2");
 const targetTool = args.targetTool;
@@ -125,7 +127,12 @@ if (portfolio || art) {
     value: rootNode,
   };
 }
-ADO > TP
+
+```
+
+### ADO > TP
+
+```js
 const areaPath = args.value.changed;
 const apiV2 = context.getService("targetprocess/api/v2");
 const workSharing = context.getService("workSharing/v2");
@@ -186,3 +193,4 @@ return {
     value:[]
   }
 }
+```
