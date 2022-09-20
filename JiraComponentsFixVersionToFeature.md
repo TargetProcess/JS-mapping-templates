@@ -1,6 +1,5 @@
 You can use this mapping to transform Versions (Fix versions, affected versions), Components from Jira to feature in Targetprocess.
 As side effect assign Story in Jira to epic by feature's epic name
-Details here - https://plan.tpondemand.com/entity/260283-booking-assign-features-epic-to-a
 
 Transformation from Targetprocess to Jira:
 
