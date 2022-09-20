@@ -1,6 +1,3 @@
-Related story:
-https://plan.tpondemand.com/entity/267179-js-mapping-for-vodafone-feature-team
-
 ### Mapping of Release to Fix Versions
 
 **Transformation from TargetProcess To Jira**
