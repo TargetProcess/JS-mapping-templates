@@ -1,7 +1,6 @@
 Mapping allows to map TP Team to Jira Components matching by name:
 - if no component with such name it creates a new component and applies it in JIRA;
 - if no team with name as selected component it shows message in CL "Can't find Team with name <componentName>"
-The mapping used at least by Vodafone Ziggo.
 
 ## TP -> JIRA
 
