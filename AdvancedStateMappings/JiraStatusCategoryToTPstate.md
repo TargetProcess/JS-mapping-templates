@@ -1,4 +1,4 @@
-### Transform status category to jira state.
+### Transform status category to TP state.
 
 ```js
 const workSharing = context.getService("workSharing/v2")
