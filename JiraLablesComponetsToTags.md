@@ -14,7 +14,6 @@ const sourceEntity = args.sourceEntity;
 
 const values = await jiraApi.getAsync(`rest/api/2/issue/${sourceEntity.sourceId}`).then(data=> {
     const {components = [], labels = []} = data.fields;
-    console.log(components, labels)
     return [...components.map(v=> v.name), ...labels].join(',')
 }).catch(e=> {
     console.error(e);
