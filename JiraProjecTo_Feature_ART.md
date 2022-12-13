@@ -10,16 +10,16 @@ const jiraApi = workSharing.getProxy(args.sourceTool);
 const fieldId = args.sourceField.id;
 const sourceIssue = args.sourceEntity;
 const targetEntity = args.targetEntity;
-const ENTITY_TYPE_NAME = 'agilereleasetrain';
+const ENTITY_TYPE_NAME = "agilereleasetrain";
 const CREATE_MISSING_ITEM = true;
 const field = args.targetField;
 
 const jiraProject = args.value.changed;
 
 const unAssign = {
-kind:'Value',
-value:null
-}
+  kind: "Value",
+  value: null,
+};
 
 const createItem = async (name) => {
   console.log(`Creating ${ENTITY_TYPE_NAME}... ${name}`);
@@ -32,7 +32,7 @@ const createItem = async (name) => {
     .then((data) => {
       if (data) {
         return {
-          id:data.Id,
+          id: data.Id,
           name: data.Name,
         };
       }
@@ -57,7 +57,6 @@ const getAssignedItems = async (tpEntity) => {
     });
 };
 
-
 const getItemIdByNameById = async (tName) => {
   const [item] = await apiV2.queryAsync(ENTITY_TYPE_NAME, {
     select: `{id:id, name:name}`,
@@ -66,16 +65,13 @@ const getItemIdByNameById = async (tName) => {
   return item;
 };
 
-
-
-
 const cmds = await getAssignedItems(targetEntity).then(async (data) => {
+  if (!jiraProject) {
+    return unAssign;
+  }
 
-if (!jiraProject) {
-  return unAssign;
-}
-
-const tpArt = await getItemIdByNameById(jiraProject.name).then(async data=> {
+  const tpArt = await getItemIdByNameById(jiraProject.name).then(
+    async (data) => {
       if (!data) {
         console.warn(
           `Failed to find ${ENTITY_TYPE_NAME} by name - "${jiraProject.name}" in ATP`
@@ -85,19 +81,19 @@ const tpArt = await getItemIdByNameById(jiraProject.name).then(async data=> {
         } else return undefined;
       }
       return data;
+    }
+  );
+
+  if (tpArt) {
+    return {
+      kind: "Value",
+      value: tpArt,
+    };
+  } else {
+    return unAssign;
+  }
 });
 
-if (tpArt) {
-  return {
-    kind:'Value',
-    value:tpArt
-  }
-} else {
-  return unAssign
-}
-
-})
-
-return cmds
+return cmds;
 
 ```
