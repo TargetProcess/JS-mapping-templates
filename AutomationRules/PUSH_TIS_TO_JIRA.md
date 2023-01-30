@@ -1,3 +1,7 @@
+#### Automation Rule pushes Team Iterations automatically to Jira as soon as they are created in Targetprocess ####
+in line 17 ```'Jira Integration Profile'``` must be changed to a real profile name (case sensitive)
+\
+
 ```js
 {
   "pipeline": [
