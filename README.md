@@ -1,3 +1,3 @@
 # JS-mapping-templates
 
-Public Repository with JS Mappings for ADO and Jira Targetprocess connectors.
+Public Targetprocess Repository with JS Mappings for ADO and Jira connectors.
