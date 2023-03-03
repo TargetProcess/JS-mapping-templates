@@ -3,7 +3,7 @@ const fs = require('fs')
 
 const clientCertKey = fs.readFileSync('../localhost-with-ca/localhost_client.key');
 const clientCert = fs.readFileSync('../localhost-with-ca/localhost_client.crt');
-const serverCA = fs.readFileSync('../localhost-with-ca/localhost-ca_client.crt');
+const serverCA = fs.readFileSync('../localhost-with-ca/localhost-ca.crt');
 
 const options = {
   hostname: 'localhost',
