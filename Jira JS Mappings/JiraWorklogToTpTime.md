@@ -2,9 +2,10 @@ Transforms Jira issue worklog to Targetprocess time entity. When worlkog changes
 
 Transformation from Jira to Targetprocess:
 ```js
-if (!args.value.changed) {
+if (!args.value.changed || (args.value.changed && Object.keys(args.value.changed).length === 0)) {
     return
 }
+
 const proxySvc = context.getService('workSharing/v2')
 const tpApi = context.getService('targetprocess/api/v2')
 const proxy = proxySvc.getProxy(args.targetTool)
@@ -53,8 +54,7 @@ if (project) {
 Cloud Version:
 
 ```js
-
-if (!args.value.changed) {
+if (!args.value.changed || (args.value.changed && Object.keys(args.value.changed).length === 0)) {
     return
 }
 const proxySvc = context.getService('workSharing/v2')
