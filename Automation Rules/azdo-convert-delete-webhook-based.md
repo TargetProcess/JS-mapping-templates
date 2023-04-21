@@ -36,7 +36,7 @@ const utils = require("utils");
 
 const { id, workItemId, fields } = resource;
 
-const itemId = workItemId ? workItemId : id;
+const itemId = workItemId && UPDATE_EVENT ? workItemId : id;
 const itemType = fields["System.WorkItemType"];
 console.log(
   `Current Item Id: "${itemId}", Item Type: "${JSON.stringify(itemType)}"`
@@ -115,15 +115,13 @@ try {
 
     const type = fields["System.WorkItemType"] ? oldValue : itemType;
 
-    console.log(type);
-
     if (!type) {
       return;
     }
 
     const tpEntity = await getSharedItem(activeProfiles, String(itemId), type);
 
-    console.log(String(itemId), type, tpEntity);
+    console.log(`TP Entity: `, tpEntity, String(itemId), itemType);
 
     if (tpEntity) {
       return await unlinkEntity(
