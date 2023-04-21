@@ -36,7 +36,7 @@ const utils = require("utils");
 
 const { id, workItemId, fields } = resource;
 
-const itemId = workItemId && UPDATE_EVENT ? workItemId : id;
+const itemId = workItemId && UPDATE_EVENT === eventType ? workItemId : id;
 const itemType = fields["System.WorkItemType"];
 console.log(
   `Current Item Id: "${itemId}", Item Type: "${JSON.stringify(itemType)}"`
