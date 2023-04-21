@@ -2,7 +2,7 @@ The AR is used to cover convert/delete/move issues in AzDo with disabled two-way
 
 1. Disable all "DELETE" webhooks in AzDo.
 2. Add filter to AND section and script to THEN.
-3. This new webhook must be added in AzDo for processing issue **delete** and **updte** events for all needed projects.
+3. This new webhook must be added in AzDo for processing issue **delete** and **update** events for all needed projects.
 
 ### AND | Filter section (Execute JavaScript filter againstIncoming Web Hook):
 
