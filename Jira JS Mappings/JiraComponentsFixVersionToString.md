@@ -4,15 +4,16 @@ Transformation from Jira to Targetprocess:
 
 ```js
 const mapJiraObjectsArrayToString = (obj, separator = ', ') => {
-    const result = obj.value.changed
-        .map(c => c.name)
+  const result = obj.value.changed
+      .map(c => c.name)
 
-    return [{
-        kind: 'Value',
-        value: result
-    }]
+  return [
+    {
+      kind: 'Value',
+      value: result.join(separator)
+    }
+  ]
 }
-
 // You can pass string with separator as second argument. ', ' is used as default separator
 return mapJiraObjectsArrayToString(args)
 
