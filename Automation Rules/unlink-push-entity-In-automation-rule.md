@@ -20,25 +20,30 @@ const api = context.getService("targetprocess/api/v2");
 const assignableId = args.Current.Assignable.Id;
 const teamName = args.Current.Team.Name;
 const sync = context.getService("workSharing/v2");
+const PROFILE_NAME = "Jira Prod";
 
 const entity = {
   sourceType: args.Current.Assignable.ResourceType,
   sourceId: `${assignableId}`,
   tool: {
-    type: 'Targetprocess',
-    id:args.Account
-  }
-}
+    type: "Targetprocess",
+    id: args.Account,
+  },
+};
 
 //check if entity is already shared
 const [entityShares] = await sync.getEntityShares(entity);
 
-if (!entityShares) { return };
+if (!entityShares) {
+  return;
+}
 
 const profiles = await sync.getProfiles();
 
 //get profile ID by Name
-const currentProfile = profiles.find(p => p.name === 'Jira PROD')
+const currentProfile = profiles.find(
+  (p) => (p.name || "").toUpperCase() === PROFILE_NAME.toUpperCase()
+);
 
 //get mapping ID
 const mappingId = currentProfile.mappings[0].id;
@@ -46,20 +51,43 @@ const targetTool = currentProfile.targetTool;
 const jiraApi = sync.getProxy(targetTool);
 
 //Fetch issue details from Jira
-const issue = await jiraApi.getAsync(`/rest/api/2/issue/${entityShares.sourceId}`)
+const issue = await jiraApi.getAsync(
+  `/rest/api/2/issue/${entityShares.sourceId}`
+);
 
-if (teamName.toUpperCase() === issue.fields.project.name.toUpperCase()) { return }
-
-else {
-  await sync.deleteEntitySharing({entity});
+if (teamName.toUpperCase() === issue.fields.project.name.toUpperCase()) {
+  return;
+} else {
+  await sync.deleteEntitySharing({ entity });
   await sync.shareEntity({
     sourceEntity: entity,
     mappingId,
     stateTransfer: {
-      kind: "source"
+      kind: "source",
     },
-    targetTool: targetTool
-  })
+    targetTool: targetTool,
+  });
 }
+```
 
+## AR in JSON
+
+```json
+{
+  "pipeline": [
+    {
+      "type": "source:targetprocess:EntityChanged",
+      "entityTypes": ["teamassignment"],
+      "modifications": {
+        "created": true,
+        "deleted": false,
+        "updated": ["Team"]
+      }
+    },
+    {
+      "type": "action:JavaScript",
+      "script": "const api = context.getService(\"targetprocess/api/v2\");\nconst assignableId = args.Current.Assignable.Id;\nconst teamName = args.Current.Team.Name;\nconst sync = context.getService(\"workSharing/v2\");\nconst PROFILE_NAME = 'Jira Prod';\n\nconst entity = {\n  sourceType: args.Current.Assignable.ResourceType,\n  sourceId: `${assignableId}`,\n  tool: {\n    type: 'Targetprocess',\n    id: args.Account\n  }\n}\n\n//check if entity is already shared\nconst [entityShares] = await sync.getEntityShares(entity);\n\nif (!entityShares) { return };\n\nconst profiles = await sync.getProfiles();\n\n//get profile ID by Name\nconst currentProfile = profiles.find(p => (p.name || '').toUpperCase() === PROFILE_NAME.toUpperCase())\n\n//get mapping ID\nconst mappingId = currentProfile.mappings[0].id;\nconst targetTool = currentProfile.targetTool;\nconst jiraApi = sync.getProxy(targetTool);\n\n//Fetch issue details from Jira\nconst issue = await jiraApi.getAsync(`/rest/api/2/issue/${entityShares.sourceId}`)\n\nif (teamName.toUpperCase() === issue.fields.project.name.toUpperCase()) { return }\n\nelse {\n  await sync.deleteEntitySharing({ entity });\n  await sync.shareEntity({\n    sourceEntity: entity,\n    mappingId,\n    stateTransfer: {\n      kind: \"source\"\n    },\n    targetTool: targetTool\n  })\n}"
+    }
+  ]
+}
 ```
