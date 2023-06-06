@@ -1,10 +1,10 @@
-####Script accespts 4 arguments:####
+##Script accespts 4 arguments
 1 - account URL (with protocol)
 2 - profile identifier
 3 - Targetprocess admin access token
 4 - Target tool token that will be set in profile settings
 
-Example
+####Example
 
 ```node update.profile.token.js http://tplocal.com 87c6199a-bfae-4cba-9bca-043bda7dff4b MTpBL1BsRXhtc3h3MmFMS3hnSTZudldicDA3MmlBc2szUjMxOC9vaDYwMVpVPQ== 6v54c5wlwtyssr3cyq5yg4htccy6bjchu5jwsnbnchbeeu7zcjba```
 
