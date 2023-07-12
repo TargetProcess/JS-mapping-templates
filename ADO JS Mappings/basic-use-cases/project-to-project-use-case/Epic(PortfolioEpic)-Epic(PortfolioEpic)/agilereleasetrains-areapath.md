@@ -1,4 +1,4 @@
-### TP > ADO
+### TP > ADO:
 
 ```js
 const workSharing = context.getService("workSharing/v2");
@@ -102,7 +102,7 @@ return {
 };
 ```
 
-### ADO > TP
+### ADO > TP:
 
 ```js
 const areaPath = args.value.changed;
@@ -217,7 +217,7 @@ if (tpArt) {
 return commands;
 ```
 
-### comparator
+### comparator:
 
 ```js
 const comparisonModes = {
