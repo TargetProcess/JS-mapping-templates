@@ -1,7 +1,7 @@
-JS Mappings for Area/Iteration Pathes.
-
+```
 Iteration Path convention:
 ROOT\PI\TI
 
-AreaPath Path convention:
+Area Path convention:
 ROOT\ART\Team
+```
