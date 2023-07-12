@@ -10,7 +10,7 @@ const getSourceEntity = async (tpEntity) => {
   return await tpApiV2
     .getByIdAsync(tpEntity.entityType, Number(tpEntity.sourceId), {
       select: `{
-        art:agilereleasetrains.Select(name).first(),
+        art:agilereleasetrain.name,
         team:assignedteams.Select(team.name).first()}`,
     })
     .then((data) => {
@@ -106,14 +106,13 @@ return {
 
 ```js
 const CREATE_MISSING_TEAM = true;
-
 const areaPath = args.value.changed;
 const apiV2 = context.getService("targetprocess/api/v2");
 const workSharing = context.getService("workSharing/v2");
 const tpApi = workSharing.getProxy(args.targetTool);
 const { targetEntity } = args;
 
-const [root, adoArt, team] = areaPath ? areaPath.split("\\") : [];
+const [root, art, team] = areaPath ? areaPath.split("\\") : [];
 const fieldId = args.targetField.id;
 
 const getTeambyName = async (name) => {
@@ -140,7 +139,7 @@ const getARTbyName = async (name) => {
   const [art] = await apiV2
     .queryAsync("AgileReleaseTrain", {
       select: `{id:id}`,
-      where: `name=="${name}"`,
+      where: `azdoproject=="${name}" or name=="${name}"`,
     })
     .catch((e) => {
       console.error(e);
@@ -174,8 +173,8 @@ if (team) {
     console.warn(`Failed to find Team by Name: "${team}" in Targetprocess`);
     if (CREATE_MISSING_TEAM) {
       console.warn(`Creating new Team... ==> "${team}"`);
-      const tpArt = await getARTbyName(adoArt);
-      tpTeam = await createTeam(team, tpArt);
+      const artId = await getARTbyName(root);
+      tpTeam = await createTeam(team, artId);
     }
   }
 }

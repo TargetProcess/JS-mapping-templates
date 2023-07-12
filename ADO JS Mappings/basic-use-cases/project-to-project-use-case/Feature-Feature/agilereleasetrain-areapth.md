@@ -10,7 +10,7 @@ const getSourceEntity = async (tpEntity) => {
   return await tpApiV2
     .getByIdAsync(tpEntity.entityType, Number(tpEntity.sourceId), {
       select: `{
-        art:agilereleasetrains.Select(name).first(),
+        art:agilereleasetrain.name,
         team:assignedteams.Select(team.name).first()}`,
     })
     .then((data) => {
@@ -105,7 +105,7 @@ return {
 ### ADO > TP:
 
 ```js
-const CREATE_MISSING_TEAM = true;
+const CREATE_MISSING_ART = true;
 
 const areaPath = args.value.changed;
 const apiV2 = context.getService("targetprocess/api/v2");
@@ -114,27 +114,10 @@ const tpApi = workSharing.getProxy(args.targetTool);
 const { targetEntity } = args;
 
 const [root, adoArt, team] = areaPath ? areaPath.split("\\") : [];
+console.log(`Areapath [${areaPath}], project [${adoArt}],  team [${team}]`);
+
 const fieldId = args.targetField.id;
-
-const getTeambyName = async (name) => {
-  const [team] = await apiV2
-    .queryAsync("team", {
-      select: `id`,
-      where: `name=="${name}"`,
-    })
-    .catch((e) => {
-      console.log(e);
-      return [];
-    });
-  return team;
-};
-
-const getTeamAssignments = async (targetEntity) => {
-  return await apiV2.queryAsync("TeamAssignment", {
-    select: `team.id`,
-    where: `assignable.id==${targetEntity.sourceId}`,
-  });
-};
+const commands = [];
 
 const getARTbyName = async (name) => {
   const [art] = await apiV2
@@ -144,21 +127,20 @@ const getARTbyName = async (name) => {
     })
     .catch((e) => {
       console.error(e);
-      return [];
+      return undefined;
     });
   return art;
 };
 
-const createTeam = async (name, artId) => {
+const createART = async (name) => {
   return tpApi
-    .postAsync("api/v1/Team?format=json", {
+    .postAsync("api/v1/AgileReleaseTrain?format=json", {
       body: {
         Name: name,
-        AgileReleaseTrain: artId || null,
       },
     })
     .then((data) => {
-      return data ? data.Id : null;
+      return data ? { id: data.Id } : null;
     })
     .catch((e) => {
       console.log(e);
@@ -166,76 +148,32 @@ const createTeam = async (name, artId) => {
     });
 };
 
-let tpTeam = null;
-if (team) {
-  tpTeam = await getTeambyName(team);
+let tpArt = null;
 
-  if (!tpTeam && team) {
-    console.warn(`Failed to find Team by Name: "${team}" in Targetprocess`);
-    if (CREATE_MISSING_TEAM) {
-      console.warn(`Creating new Team... ==> "${team}"`);
-      const tpArt = await getARTbyName(adoArt);
-      tpTeam = await createTeam(team, tpArt);
+if (adoArt) {
+  tpArt = await getARTbyName(adoArt);
+  if (!tpArt && adoArt) {
+    console.warn(`Failed to find ART [${adoArt}] in Targetprocess`);
+    if (CREATE_MISSING_ART) {
+      console.warn(`Creating new ART... ==> "${adoArt}"`);
+      tpArt = await createART(adoArt);
     }
   }
 }
 
-const assignedTeams = await getTeamAssignments(targetEntity);
-const teams =
-  assignedTeams.length > 1
-    ? [...new Set([...assignedTeams, tpTeam])]
-    : [tpTeam];
-
 return {
   kind: "Value",
-  value: teams.filter((v) => !!v).map((team) => ({ id: team })),
+  value: adoArt && tpArt ? tpArt : null,
 };
 ```
 
-### Comparator:
+### Comparators:
 
 ```js
-const comparisonModes = {
-  OneToOne: "OneToOne",
-  Contains: "Contains",
-};
-const compareMode = comparisonModes.Contains;
-const tpApiV2 = context.getService("targetprocess/api/v2");
 const [rootNode = null, artNode = null, teamNode = null] = args.targetFieldValue
   ? args.targetFieldValue.toolValue.split("\\")
   : [];
-const sourceAssignmentsArray = Array.isArray(args.sourceFieldValue.toolValue)
-  ? args.sourceFieldValue.toolValue
-  : [];
+const { Name: tpItem = null } = args.sourceFieldValue.toolValue || {};
 
-if (
-  compareMode === comparisonModes.OneToOne &&
-  sourceAssignmentsArray.length > 1
-) {
-  console.log(
-    `[Valid: false] Multiple source team assignments for comparison mode: OneToOne`
-  );
-  return false;
-}
-
-if (teamNode === null) {
-  return sourceAssignmentsArray.length === 0;
-}
-
-if (sourceAssignmentsArray.length === 0) {
-  return false;
-}
-
-const result = await tpApiV2.queryAsync("TeamAssignment", {
-  select: `{id}`,
-  where: `(id in ${JSON.stringify(
-    sourceAssignmentsArray.map((x) => x.id)
-  )} and team.name = '${teamNode}')`,
-});
-
-if (result.length === 1) {
-  return true;
-}
-
-return false;
+return (artNode && artNode.toLowerCase()) === (tpItem && tpItem.toLowerCase());
 ```
