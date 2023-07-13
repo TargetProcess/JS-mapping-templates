@@ -1,4 +1,4 @@
-### JSON Version.
+### JSON Version:
 
 ```json
 {
@@ -42,7 +42,7 @@
 }
 ```
 
-### JavaScript Version.
+### JavaScript Version:
 
 ```js
 /*
