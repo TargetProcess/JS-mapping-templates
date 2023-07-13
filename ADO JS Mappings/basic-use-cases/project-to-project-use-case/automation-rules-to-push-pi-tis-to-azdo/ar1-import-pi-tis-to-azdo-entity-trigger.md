@@ -94,8 +94,6 @@ const tis = [
   ...new Map(Object(teamiterations).map((ti) => [ti.name, ti])).values(),
 ];
 
-console.log(tis);
-
 const perChunk = 10;
 
 const results = tis.reduce((resultArray, item, index) => {
