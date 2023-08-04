@@ -1,8 +1,8 @@
-### The mappings allows adding a link to tp item to weblinks.
+## The mappings allows adding a link to tp item to weblinks.
 
-## jira > tp, tp < jira
+### jira > tp, tp < jira
 
-## fields: id <> key
+### fields: id <> key
 
 ![image](https://github.com/TargetProcess/JS-mapping-templates/assets/25883081/36df9a0e-f828-40a4-982e-503e4a2fc975)
 
