@@ -1,6 +1,6 @@
 ## Route data from Jira to TP to one TP project.
 
-### TP_PROJECT_ID have be updated with Targetprocess project
+### TP_PROJECT_ID should be updated with Targetprocess project
 
 ```js
 const workSharing = context.getService("workSharing/v2");
