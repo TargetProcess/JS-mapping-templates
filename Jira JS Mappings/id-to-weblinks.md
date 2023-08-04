@@ -2,7 +2,9 @@
 
 ## jira > tp, tp < jira
 
-## mapped fields: id <> key
+## fields: id <> key
+
+![image](https://github.com/TargetProcess/JS-mapping-templates/assets/25883081/36df9a0e-f828-40a4-982e-503e4a2fc975)
 
 ```js
 const isTpSource = args.account === args.sourceTool.id;
