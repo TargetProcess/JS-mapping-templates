@@ -1,6 +1,5 @@
 ### Jira > TP
 
-
 ```js
 const apiV2 = context.getService("targetprocess/api/v2");
 const workSharing = context.getService("workSharing/v2");
@@ -10,7 +9,7 @@ const jiraApi = workSharing.getProxy(args.sourceTool);
 const fieldId = args.sourceField.id;
 const sourceIssue = args.sourceEntity;
 const targetEntity = args.targetEntity;
-const ENTITY_TYPE_NAME = 'agilereleasetrain';
+const ENTITY_TYPE_NAME = "agilereleasetrain";
 const CREATE_MISSING_ITEM = true;
 const field = args.targetField;
 
@@ -34,7 +33,7 @@ const createItem = async (name) => {
       if (data) {
         return {
           name: data.Name,
-          id:data.Id
+          id: data.Id,
         };
       }
     })
@@ -73,43 +72,51 @@ const getItemIdByNameById = async (tName) => {
   return item;
 };
 
-
 const cmds = await getAssignedItems(targetEntity).then(async (data) => {
-const unassingItems = data.filter(a => (a.name || '').toLowerCase()!== (jiraProject.name || '').toLowerCase()).map(art=> ({
-        kind: "RelationRemoved",
-        relation: {
-          sourceId: `${art.id}`,
-          ...relation}
-}))
+  const unassingItems = data
+    .filter(
+      (a) =>
+        (a.name || "").toLowerCase() !== (jiraProject.name || "").toLowerCase()
+    )
+    .map((art) => ({
+      kind: "RelationRemoved",
+      relation: {
+        sourceId: `${art.id}`,
+        ...relation,
+      },
+    }));
 
-const notLinkedItems = getNoLinkedItems(data, jiraProject);
+  const notLinkedItems = getNoLinkedItems(data, jiraProject);
 
-const assignItems = await Promise.all(notLinkedItems.map(async item=> {
-return await getItemIdByNameById(item.name).then(async data=> {
-      if (!data) {
-        console.warn(
-          `Failed to find ${ENTITY_TYPE_NAME} by name - "${item.name}" in ATP`
-        );
-        if (CREATE_MISSING_ITEM) {
-          return await createItem(item.name);
-        } else return undefined;
-      }
-      return data;
-});
-}))
+  const assignItems = await Promise.all(
+    notLinkedItems.map(async (item) => {
+      return await getItemIdByNameById(item.name).then(async (data) => {
+        if (!data) {
+          console.warn(
+            `Failed to find ${ENTITY_TYPE_NAME} by name - "${item.name}" in ATP`
+          );
+          if (CREATE_MISSING_ITEM) {
+            return await createItem(item.name);
+          } else return undefined;
+        }
+        return data;
+      });
+    })
+  );
 
-const toAssign = assignItems.filter(v=> !!v).map(i=> {
-  return {
+  const toAssign = assignItems
+    .filter((v) => !!v)
+    .map((i) => {
+      return {
         kind: "RelationAdded",
         relation: {
           sourceId: `${Object(i).id}`,
           ...relation,
         },
-      }
-})
+      };
+    });
 
-return [...unassingItems, ...toAssign]
-
-})
+  return [...unassingItems, ...toAssign];
+});
 return cmds;
 ```

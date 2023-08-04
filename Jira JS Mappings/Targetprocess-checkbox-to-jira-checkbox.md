@@ -12,9 +12,7 @@ if (args.value.changed) {
     value: [],
   };
 }
-
 ```
-
 
 ### Transformation Jira to Targetprocess
 
@@ -31,5 +29,4 @@ if (value && value.length) {
     value: false,
   };
 }
-
 ```

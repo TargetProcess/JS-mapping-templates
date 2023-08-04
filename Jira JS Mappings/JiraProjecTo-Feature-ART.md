@@ -1,6 +1,5 @@
 ### Jira > TP
 
-
 ```js
 const apiV2 = context.getService("targetprocess/api/v2");
 const workSharing = context.getService("workSharing/v2");
@@ -95,5 +94,4 @@ const cmds = await getAssignedItems(targetEntity).then(async (data) => {
 });
 
 return cmds;
-
 ```

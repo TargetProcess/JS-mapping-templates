@@ -83,6 +83,4 @@ if (jiraVersion) {
     value: tpItem ? tpItem : null,
   };
 }
-
-
 ```
