@@ -65,38 +65,48 @@ const users = args.value.changed;
 const roleName = args.targetField.id;
 const fieldId = args.sourceField.id;
 
-const [roleId] = await apiv2.queryAsync("Role", {
-  select: `id`,
-  where: `name=="${roleName}"`,
-});
-
 if (users) {
+  const [roleId] = await apiv2.queryAsync("Role", {
+    select: `id`,
+    where: `name=="${roleName}"`,
+  });
+
   //Get field data directly from the issue, due to GDPR policy a user can allow seeing email either anyone or admin only. With the second option, no email in the webhook
   const query = await jiraApi.getAsync(
     `/rest/api/latest/issue/${args.sourceEntity.sourceId}`
   );
+
   const fieldData = query.fields && query.fields[fieldId];
-  const assignments = fieldData.map((v) => {
-    const [firstName, lastName = ""] = v.displayName.split(" ");
-    return {
-      user: { email: v.emailAddress || null, firstName, lastName },
-      role: { id: roleId },
-    };
-  });
+  const displayName = fieldData?.displayName;
+  const email = fieldData?.emailAddress;
+  const accountId = fieldData?.accountId;
 
-  const noEmails = fieldData
-    .filter((v) => !v.emailAddress)
-    .map((m) => m.displayName);
-  noEmails.length &&
-    console.warn(
-      `Email is not avaliable or hidden for the following users: ${noEmails.join(
-        ", "
-      )}`
-    );
+  if (!fieldData) {
+    console.error(`Faield to get data for the field "${fieldId}"`);
+    return;
+  }
 
+  const [firstName, lastName = ""] = displayName.split(" ");
+  const assignment = {
+    user: {
+      email: email || `${accountId.replace(":", "-")}@domain.com`,
+      firstName,
+      lastName,
+      login: accountId,
+    },
+    role: { id: roleId },
+  };
+
+  const getUserByEmailByLogin = async (email, accountId) => {
+    return await apiv2.queryAsync("User", {
+      select: `{user:{login:login, email:email, firstName:firstName, lastName:lastName}}`,
+      where: `email="${email}" or login="${accountId}"`,
+    });
+  };
+  const [user] = await getUserByEmailByLogin(email, accountId);
   return {
     kind: "Value",
-    value: assignments.filter((v) => !!v.user.email),
+    value: user ? [{ ...user, role: { id: roleId } }] : [assignment],
   };
 } else
   return {
