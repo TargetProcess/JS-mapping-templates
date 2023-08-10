@@ -124,7 +124,7 @@ if (users) {
   }
 } else
   return {
-    kind: "Value",s
+    kind: "Value",
     value: [],
   };
 ```
