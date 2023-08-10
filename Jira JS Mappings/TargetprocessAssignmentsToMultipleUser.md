@@ -4,113 +4,127 @@ Targetprocess to Jira(Assignments -> Multiple User Field):
 
 ```js
 const workSharing = context.getService("workSharing/v2");
-const jiraApi = workSharing.getProxy(args.targetTool);
 const targetProcessApi = context.getService("targetprocess/api/v2");
-const roleAssignment =
-  (args.value.changed && args.value.changed[0]) ||
-  (args.value.original && args.value.original[0]);
-const fieldId = args.targetField.id;
-const issueId = args.targetEntity.sourceId;
-const accountIDs = [];
+const jiraApi = workSharing.getProxy(args.targetTool);
+const { targetEntity, targetField, sourceField } = args;
 
-if (roleAssignment) {
-  //Query existing assignments
-  const [{ assignments }] = await targetProcessApi.queryAsync(
-    args.sourceEntity.entityType,
-    {
-      select: `{assignments.where(role.id==${roleAssignment.role.id}).select({generalUser.email})}`,
-      where: `id==${args.sourceEntity.sourceId}`,
+const [{ assignments }] = await targetProcessApi.queryAsync(
+  args.sourceEntity.entityType,
+  {
+    select: `{assignments.where(role.name=="${sourceField.id}").select({email:generalUser.email, login:generalUser.login})}`,
+    where: `id==${args.sourceEntity.sourceId}`,
+  }
+);
+const getjiraUserAccountId = async (email, login) => {
+  try {
+    const [user] = await jiraApi
+      .getAsync(`/rest/api/2/user/search?query=${email}`)
+      .then(async (userEmail) => {
+        if (Array.isArray(userEmail) && !userEmail.length) {
+          return await jiraApi.getAsync(
+            `/rest/api/2/user/search?accountId=${login}`
+          );
+        }
+        return userEmail;
+      });
+    if (!user) {
+      console.warn(
+        `Faield to find user in Jira by "${email}" or by accountId in Jira "${login}"`
+      );
     }
+    return user && { accountId: user.accountId };
+  } catch (e) {
+    console.log(e);
+  }
+};
+
+if (Array.isArray(assignments) && assignments.length) {
+  const jiraUsers = await Promise.all(
+    assignments.map(async (assignment) =>
+      getjiraUserAccountId(assignment.email, assignment.login)
+    )
   );
 
-  //Get account IDs for assigned users
-  const jiraUsers = await Promise.all(
-    assignments.map(async (e) => {
-      try {
-        const [query] = await jiraApi.getAsync(
-          `/rest/api/3/user/search?query=${e.email}`
-        );
-        return query;
-      } catch (e) {
-        console.error(e);
-      }
-    })
-  );
-  jiraUsers
-    .filter((v) => !!v)
-    .map((id) => {
-      accountIDs.push({ accountId: id["accountId"] });
-    });
-}
-//Push users into custom field
-const response = await jiraApi.putAsync(`rest/api/2/issue/${issueId}`, {
-  headers: {
-    "Content-Type": "application/json",
-  },
-  body: {
-    fields: {
-      [fieldId]: accountIDs,
+  return {
+    kind: "Value",
+    options: {
+      applyRawValue: true,
     },
-  },
-});
+    value: jiraUsers.filter((v) => !!v),
+  };
+} else {
+  return {
+    kind: "Value",
+    value: [],
+    options: {
+      applyRawValue: true,
+    },
+  };
+}
 ```
 
 Jira to Targetprocess (Multiple User Field > Assignments):
 
 ```js
-const apiv2 = require("targetprocess/api/v2");
-const workSharing = context.getService("workSharing/v2");
-const jiraApi = workSharing.getProxy(args.sourceTool);
-const users = args.value.changed;
+const { sourceTool, value, targetField, sourceField } = args,
+  apiv2 = require("targetprocess/api/v2"),
+  workSharing = context.getService("workSharing/v2"),
+  jiraApi = workSharing.getProxy(sourceTool);
+const users = value.changed;
+const { roleId } = Object(targetField.meta).attributes;
 const roleName = args.targetField.id;
-const fieldId = args.sourceField.id;
+const { id: fieldId } = args.sourceField;
 
-if (users) {
-  const [roleId] = await apiv2.queryAsync("Role", {
-    select: `id`,
-    where: `name=="${roleName}"`,
+const DOMAIN = "domain.com";
+
+const getUserByEmailByLogin = async (email, accountId) => {
+  return await apiv2.queryAsync("User", {
+    select: `{user:{login:login, email:email, firstName:firstName, lastName:lastName}}`,
+    where: `email="${email}" or login="${accountId}"`,
   });
+};
 
-  //Get field data directly from the issue, due to GDPR policy a user can allow seeing email either anyone or admin only. With the second option, no email in the webhook
-  const query = await jiraApi.getAsync(
-    `/rest/api/latest/issue/${args.sourceEntity.sourceId}`
-  );
-
-  const fieldData = query.fields && query.fields[fieldId];
-  const displayName = fieldData?.displayName;
-  const email = fieldData?.emailAddress;
-  const accountId = fieldData?.accountId;
-
-  if (!fieldData) {
-    console.error(`Faield to get data for the field "${fieldId}"`);
+async function processUser({ displayName = "", emailAddress, accountId }) {
+  if (!accountId) {
     return;
   }
-
   const [firstName, lastName = ""] = displayName.split(" ");
   const assignment = {
     user: {
-      email: email || `${accountId.replace(":", "-")}@domain.com`,
+      email: emailAddress || `${accountId.replace(":", "-")}@${DOMAIN}`,
       firstName,
       lastName,
       login: accountId,
     },
     role: { id: roleId },
   };
+  const [user] = await getUserByEmailByLogin(emailAddress, accountId);
+  return user ? { ...user, role: { id: roleId } } : assignment;
+}
 
-  const getUserByEmailByLogin = async (email, accountId) => {
-    return await apiv2.queryAsync("User", {
-      select: `{user:{login:login, email:email, firstName:firstName, lastName:lastName}}`,
-      where: `email="${email}" or login="${accountId}"`,
-    });
-  };
-  const [user] = await getUserByEmailByLogin(email, accountId);
-  return {
-    kind: "Value",
-    value: user ? [{ ...user, role: { id: roleId } }] : [assignment],
-  };
+if (users) {
+  try {
+    const jiraIssue = await jiraApi.getAsync(
+      `/rest/api/latest/issue/${args.sourceEntity.sourceId}`
+    );
+
+    const fieldData = (jiraIssue.fields && jiraIssue.fields[fieldId]) || [];
+
+    const users = await Promise.all(
+      fieldData.map(async (user) => processUser(user))
+    );
+
+    return {
+      kind: "Value",
+      value: users.filter((v) => !!v),
+    };
+  } catch (e) {
+    console.error(e);
+    return;
+  }
 } else
   return {
-    kind: "Value",
+    kind: "Value",s
     value: [],
   };
 ```
