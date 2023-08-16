@@ -12,12 +12,12 @@ const http = context.getService("http");
 const jiraProjectKey = args.targetEntity.sourceId.split("-")[0];
 
 // get components for JIRA project
-const getProjectComponents = async (projectKey) =>
-  jiraApi.getAsync(`rest/api/2/project/${projectKey}/components`);
+const getProjectFixVersions = async (projectKey) =>
+  jiraApi.getAsync(`rest/api/2/project/${projectKey}/versions`);
 
 // create component
-const createComponentWithName = async (name) => {
-  const response = await jiraApi.postAsync("rest/api/2/component", {
+const createFixVersionWithName = async (name) => {
+  const response = await jiraApi.postAsync("rest/api/2/version", {
     body: {
       description: name,
       name: name,
@@ -41,23 +41,23 @@ if (!args.value.changed) {
 const value = Array.isArray(args.value.changed)
   ? args.value.changed
   : [args.value.changed];
-const components = await Promise.all(
+const fixVersions = await Promise.all(
   value.map(async (value) => {
-    const jiraProjectComponents = await getProjectComponents(jiraProjectKey);
-    const existingComponent = jiraProjectComponents.find(
+    const jiraProjectFixVersions = await getProjectFixVersions(jiraProjectKey);
+    const existingVersion = jiraProjectFixVersions.find(
       (c) => c.name === value
     );
-    let component = existingComponent;
-    if (!component) {
-      component = await createComponentWithName(value);
+    let version = existingVersion;
+    if (!version) {
+      version = await createFixVersionWithName(value);
     }
-    return component;
+    return version;
   })
 );
 
 return {
   kind: "Value",
-  value: components,
+  value: fixVersions,
 };
 ```
 
@@ -85,14 +85,14 @@ const updateCustomField = async (customField, newValue) =>
   });
 
 if (args.value.changed && args.value.changed.length > 0) {
-  const components = args.value.changed;
+  const versions = args.value.changed;
 
   const tpMultiselects = await getMultiselect();
 
   for (const cf of tpMultiselects) {
     var newValue = cf.value || "";
     const values = newValue.split("\r\n");
-    components.forEach((c) => {
+    versions.forEach((c) => {
       if (!values.find((v) => v === c.name)) {
         newValue = newValue.concat("\r\n" + c.name);
       }
@@ -107,7 +107,7 @@ if (args.value.changed && args.value.changed.length > 0) {
   }
   return {
     kind: "Value",
-    value: components.map((c) => c.name).join(","),
+    value: versions.map((c) => c.name).join(","),
   };
 } else {
   return {
