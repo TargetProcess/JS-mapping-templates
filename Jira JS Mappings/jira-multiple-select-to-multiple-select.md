@@ -51,11 +51,11 @@ if (args.value.changed) {
         },
       });
     }
-    return {
-      kind: "Value",
-      value: options.length ? options.join(",") : null,
-    };
   }
+  return {
+    kind: "Value",
+    value: options.length ? options.join(",") : null,
+  };
 } else {
   return {
     value: null,
