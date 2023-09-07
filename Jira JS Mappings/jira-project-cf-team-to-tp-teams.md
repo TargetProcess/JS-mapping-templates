@@ -48,7 +48,7 @@ const getCFOptions = async (targetEntity, targetField) => {
 
   if (field === undefined) {
     console.warn(
-      `Faield to get meta data for the CF "${id}", possible reason. Field is not on the screen`
+      `Faield to get meta data for the CF "${id}". Possible reason - field is not on the screen`
     );
     return;
   }
