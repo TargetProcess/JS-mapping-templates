@@ -46,8 +46,10 @@ const getCFOptions = async (targetEntity, targetField) => {
   const { fields = {} } = editMeta;
   const field = fields[id];
 
-  if (!field) {
-    console.warn(`Faield to get meta data for the CF "${id}"`);
+  if (field === undefined) {
+    console.warn(
+      `Faield to get meta data for the CF "${id}", possible reason. Field is not on the screen`
+    );
     return;
   }
 
@@ -91,6 +93,10 @@ try {
     }
 
     const cfOptions = await getCFOptions(targetEntity, targetField);
+
+    if (cfOptions === undefined) {
+      return;
+    }
 
     const teamName = getTeamName(
       transformMapping(CUSTOM_MAPPING_JIRA_PROJECTS_TO_TARGETPROCESS_TEAMS),
