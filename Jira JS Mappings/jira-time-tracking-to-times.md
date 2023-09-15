@@ -19,7 +19,6 @@ const timeRemainingEstimateSeconds = timeTracker.remainingEstimateSeconds ?? 0;
 const timeSpentSeconds = timeTracker.timeSpentSeconds ?? 0;
 
 /* 
-tr
 WORKLOG_ID_FIELD - field in Targetprocess on the Time entity that will store Jira Worklog id. - REQUIRED.
 
 LIMIT - max number of time records that can be moved to ATP. If exceeds only one sumirized time record will be created. 
@@ -298,7 +297,6 @@ const ensureUser = async ({
       },
     })
     .then((user) => {
-      console.log("USERRR: ", user);
       const {
         FirstName: firstName,
         LastName: lastName,
