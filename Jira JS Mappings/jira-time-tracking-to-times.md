@@ -43,7 +43,7 @@ const CONFIG = {
   LIMIT: 1000,
   DEFAULT_USER: {
     firstName: "Time",
-    lastName: "Traking",
+    lastName: "Tracking",
     email: "default.time.tracking@nonexisting.com",
   },
   DEFAULT_ROLE: {
@@ -342,13 +342,16 @@ const getTpUsers = async (...jiraUsers) => {
 
   const usersToAdd = usersEmail.filter((email) => !tpUsers.has(email));
   const mappedJiraUsers = new Map(jiraUsers.map((user) => [user.email, user]));
-
   if (CONFIG.ADD_USER_STRATEGY.ADD_USER) {
     await Promise.all(
       usersToAdd.map(async (email) => {
-        const newUser = await ensureUser(mappedJiraUsers.get(email));
-        if (newUser) {
-          tpUsers.set(email, newUser);
+        const user =
+          email === CONFIG.DEFAULT_USER.email
+            ? CONFIG.DEFAULT_USER
+            : mappedJiraUsers.get(email);
+        if (user) {
+          const newUser = await ensureUser(user);
+          newUser && tpUsers.set(email, newUser);
         }
       })
     );
