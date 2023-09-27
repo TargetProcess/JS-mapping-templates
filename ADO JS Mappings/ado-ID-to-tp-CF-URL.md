@@ -1,5 +1,5 @@
-Mapping of TP URL CF to ADO ID
-
+Mapping of TP URL CF to ADO ID. 
+Mapping is two-way due to loop prevention and enabled proper update of CF in TP in both cases, when entity was created in TP and pushed to ADO; 2) created in ADO and imported to TP. 
 
 ### From TP to ADO
 
@@ -44,6 +44,7 @@ return {
 
 
 ### COMPARATOR
+Note that current version of comparator compares not the URL itself, but label, which is a number equal to ID, not the URL itself. If you want to compare URL itself, uncomment the previous 2 lines and comment the last 2. 
 
 ```js
 const {sourceFieldValue, targetFieldValue} = args;
