@@ -537,3 +537,38 @@ try {
   console.error(e);
 }
 ```
+
+### comparator
+
+```js
+const {
+  sourceEntity,
+  targetEntity,
+  sourceTool,
+  sourceFieldValue,
+  targetFieldValue,
+} = args;
+const apiV2 = context.getService("targetprocess/api/v2");
+
+console.log(sourceEntity.entityType, sourceEntity.sourceId);
+const { timeSpent, timeRemain } = await apiV2.getByIdAsync(
+  sourceEntity.entityType,
+  Number(sourceEntity.sourceId),
+  {
+    select: `{timeSpent, timeRemain}`,
+  }
+);
+
+const timeTracker = targetFieldValue.toolValue || {};
+
+const timeTrackerRemainingEstimate = Number(
+  ((timeTracker.remainingEstimateSeconds ?? 0) / 3600).toFixed(4)
+);
+const timeTrackerSpent = Number(
+  ((timeTracker.timeSpentSeconds ?? 0) / 3600).toFixed(4)
+);
+
+return (
+  timeSpent === timeTrackerSpent && timeTrackerRemainingEstimate === timeRemain
+);
+```
