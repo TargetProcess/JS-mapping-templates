@@ -550,7 +550,6 @@ const {
 } = args;
 const apiV2 = context.getService("targetprocess/api/v2");
 
-console.log(sourceEntity.entityType, sourceEntity.sourceId);
 const { timeSpent, timeRemain } = await apiV2.getByIdAsync(
   sourceEntity.entityType,
   Number(sourceEntity.sourceId),
