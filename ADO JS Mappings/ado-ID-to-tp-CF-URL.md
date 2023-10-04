@@ -50,9 +50,11 @@ Note that current version of comparator compares not the URL itself, but label, 
 
 ```js
 const { sourceFieldValue, targetFieldValue } = args;
-const url = sourceFieldValue.toolValue && sourceFieldValue.toolValue.URL;
+// const url = sourceFieldValue.toolValue && sourceFieldValue.toolValue.URL;
+// return (url && url.split('/').pop()) === (targetFieldValue.toolValue && targetFieldValue.toolValue.toString())
+
+const url = sourceFieldValue.toolValue && sourceFieldValue.toolValue.Label;
 return (
-  (url && url.split("/").pop()) ===
-  (targetFieldValue.toolValue && targetFieldValue.toolValue.toString())
+  url === (targetFieldValue.toolValue && targetFieldValue.toolValue.toString())
 );
 ```
