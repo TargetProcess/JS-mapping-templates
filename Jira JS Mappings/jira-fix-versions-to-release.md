@@ -321,3 +321,19 @@ return {
   value: tpItem ? tpItem : null,
 };
 ```
+
+### comparator
+
+```js
+const {
+  sourceFieldValue: { toolValue: tpValue },
+  targetFieldValue: { toolValue: jiraValue = [] },
+} = args;
+
+const { Name: name } = tpValue || {};
+const jiraFixNames = jiraValue.map((v) => v.name);
+
+return name
+  ? Boolean(jiraFixNames.find((v) => v === n))
+  : Boolean(n) === Boolean(jiraValue.length);
+```
