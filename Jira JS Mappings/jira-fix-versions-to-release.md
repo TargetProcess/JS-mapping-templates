@@ -327,13 +327,13 @@ return {
 ```js
 const {
   sourceFieldValue: { toolValue: tpValue },
-  targetFieldValue: { toolValue: jiraValue = [] },
+  targetFieldValue: { toolValue: jiraValues = [] },
 } = args;
 
 const { Name: name } = tpValue || {};
-const jiraFixNames = jiraValue.map((v) => v.name);
+const jiraFixNames = jiraValues.map((v) => v.name);
 
 return name
-  ? Boolean(jiraFixNames.find((v) => v === n))
-  : Boolean(n) === Boolean(jiraValue.length);
+  ? Boolean(jiraFixNames.find((v) => v === name))
+  : Boolean(name) === Boolean(jiraValues.length);
 ```
