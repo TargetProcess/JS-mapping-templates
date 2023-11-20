@@ -123,7 +123,7 @@ const fixVersions = await Promise.all(
     })
 );
 /* 
-if dest. field accept a single value unccoment the line 131, and comment the line 130
+if dest. field accept a single value unccoment the commneted line, and comment duplicated value: fixVersions.filter((v) => !!v)
 */
 return {
   kind: "Value",
@@ -340,6 +340,11 @@ const {
 } = args;
 
 const { Name: name } = tpValue || {};
+
+const getValues = (value) =>
+  value === null ? [] : Array.isArray(value) ? value : [value];
+
+const jiraValues = getValues(jiraValues);
 const jiraFixNames = jiraValues.map((v) => v.name);
 
 return name
