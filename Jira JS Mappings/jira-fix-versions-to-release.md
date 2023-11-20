@@ -13,6 +13,10 @@ const tpApi = workSharing.getProxy(sourceTool);
 const jiraProjectKey = targetEntity.sourceId.split("-")[0];
 const tpItem = args.value.changed;
 
+const CONFIG = {
+  destinationValueType: {},
+};
+
 const getProjectFixversions = async (projectKey) =>
   jiraApi.getAsync(`rest/api/2/project/${projectKey}/versions`).catch((e) => {
     console.error(
@@ -118,10 +122,13 @@ const fixVersions = await Promise.all(
       return fixVersion;
     })
 );
-
+/* 
+if dest. field accept a single value unccoment the line 131, and comment the line 130
+*/
 return {
   kind: "Value",
   value: fixVersions.filter((v) => !!v),
+  // value: fixVersions.filter((v) => !!v)[0] || null,
 };
 ```
 
@@ -140,7 +147,9 @@ const workSharing = context.getService("workSharing/v2");
 const apiV2 = context.getService("targetprocess/api/v2");
 const tpApi = workSharing.getProxy(targetTool);
 const jiraApi = workSharing.getProxy(sourceTool);
-const fixVersions = changed || [];
+const getValues = (value) =>
+  value === null ? [] : Array.isArray(value) ? value : [value];
+const fixVersions = getValues(changed);
 
 const CONFIG = {
   CREATE_MISSING_ITEM: false,
