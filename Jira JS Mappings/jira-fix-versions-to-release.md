@@ -123,7 +123,8 @@ const fixVersions = await Promise.all(
     })
 );
 /* 
-if dest. field accept a single value unccoment the commneted line, and comment line fixVersions.filter((v) => !!v)
+if dest. field accept a single value unccoment the commneted line, and comment line:
+value: fixVersions.filter((v) => !!v),
 */
 return {
   kind: "Value",
