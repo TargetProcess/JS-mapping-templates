@@ -336,7 +336,7 @@ return {
 ```js
 const {
   sourceFieldValue: { toolValue: tpValue },
-  targetFieldValue: { toolValue: jiraValues = [] },
+  targetFieldValue: { toolValue: jiraFixVersions = [] },
 } = args;
 
 const { Name: name } = tpValue || {};
@@ -344,7 +344,7 @@ const { Name: name } = tpValue || {};
 const getValues = (value) =>
   value === null ? [] : Array.isArray(value) ? value : [value];
 
-const jiraValues = getValues(jiraValues);
+const jiraValues = getValues(jiraFixVersions);
 const jiraFixNames = jiraValues.map((v) => v.name);
 
 return name
