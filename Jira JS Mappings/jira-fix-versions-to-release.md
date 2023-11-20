@@ -286,50 +286,54 @@ const getPiByName = async (name, project) => {
   return item;
 };
 
-const tpProject = await getProject(targetEntity);
+try {
+  const tpProject = await getProject(targetEntity);
 
-if (!tpProject) {
-  return;
-}
-let tpItem = await getPiByName(name, tpProject);
-
-if (!tpItem) {
-  console.warn(
-    `Failed to find a Program Increment by name "${name}" in Targetprocess`
-  );
-  if (CONFIG.CREATE_MISSING_ITEM) {
-    if (!startDate || !endDate) {
-      console.warn(
-        `Start and End Dates are required to create item in ATP, skip adding a new item`
-      );
-      return;
-    }
-    console.log(`Creating new ${targetField.meta.type.id}...`);
-    tpItem = await tpApi
-      .postAsync(`api/v1/${targetField.meta.type.id}?format=json`, {
-        body: {
-          Name: name,
-          Project: tpProject,
-          StartDate: startDate,
-          EndDate: endDate,
-        },
-      })
-      .then((data) => {
-        return data ? { id: data.Id } : null;
-      })
-      .catch((e) => {
-        console.error(
-          `Failed to create ${targetField.meta.type.id} in Targetprocess`,
-          e
-        );
-      });
+  if (!tpProject) {
+    return;
   }
-}
+  let tpItem = await getPiByName(name, tpProject);
 
-return {
-  kind: "Value",
-  value: tpItem ? tpItem : null,
-};
+  if (!tpItem) {
+    console.warn(
+      `Failed to find a Program Increment by name "${name}" in Targetprocess`
+    );
+    if (CONFIG.CREATE_MISSING_ITEM) {
+      if (!startDate || !endDate) {
+        console.warn(
+          `Start and End Dates are required to create item in ATP, skip adding a new item`
+        );
+        return;
+      }
+      console.log(`Creating new ${targetField.meta.type.id}...`);
+      tpItem = await tpApi
+        .postAsync(`api/v1/${targetField.meta.type.id}?format=json`, {
+          body: {
+            Name: name,
+            Project: tpProject,
+            StartDate: startDate,
+            EndDate: endDate,
+          },
+        })
+        .then((data) => {
+          return data ? { id: data.Id } : null;
+        })
+        .catch((e) => {
+          console.error(
+            `Failed to create ${targetField.meta.type.id} in Targetprocess`,
+            e
+          );
+        });
+    }
+  }
+
+  return {
+    kind: "Value",
+    value: tpItem ? tpItem : null,
+  };
+} catch (e) {
+  console.error(e);
+}
 ```
 
 ### comparator
