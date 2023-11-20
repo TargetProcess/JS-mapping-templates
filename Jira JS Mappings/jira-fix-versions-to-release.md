@@ -13,10 +13,6 @@ const tpApi = workSharing.getProxy(sourceTool);
 const jiraProjectKey = targetEntity.sourceId.split("-")[0];
 const tpItem = args.value.changed;
 
-const CONFIG = {
-  destinationValueType: {},
-};
-
 const getProjectFixversions = async (projectKey) =>
   jiraApi.getAsync(`rest/api/2/project/${projectKey}/versions`).catch((e) => {
     console.error(
