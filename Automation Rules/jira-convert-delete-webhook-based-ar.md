@@ -124,9 +124,8 @@ if (event === DELETE_EVENT) {
     issue.key,
     issue.fields.issuetype.id
   );
-  if (tpEntity) {
-    return await unlinkAndDeleteTpEntity(tpEntity);
-  }
+
+  return await unlinkAndDeleteTpEntity(tpEntity);
 } else if (event === LINK_CREATED_EVENT) {
   const issueLink = body?.issueLink;
   if (!issueLink) {
@@ -156,10 +155,7 @@ if (event === DELETE_EVENT) {
 
       !tpEntity &&
         console.log(`Faield to get TP entity for the item: "${subTask.key}"`);
-
-      if (tpEntity) {
-        return await unlinkAndDeleteTpEntity(tpEntity);
-      } else return;
+      return await unlinkAndDeleteTpEntity(tpEntity);
     }
   } catch (e) {
     console.log(e);
@@ -223,9 +219,7 @@ if (event === DELETE_EVENT) {
           : undefined;
       !tpEntity &&
         console.log(`Faield to get TP entity for the item: "${key}"`);
-      if (tpEntity) {
-        return await unlinkAndDeleteTpEntity(tpEntity);
-      } else return;
+      return await unlinkAndDeleteTpEntity(tpEntity);
     }
   } catch (e) {
     console.log(e);
