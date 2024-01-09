@@ -13,6 +13,25 @@ Rules works for all Jira profiles in the account.
 
 ```js
 const body = args.body,
+  changeLog = Object(body).changelog,
+  event = body.webhookEvent;
+// console.log(args.body);
+const DELETE_EVENT = "jira:issue_deleted";
+const fields = ["issuetype", "key"];
+return (
+  event === DELETE_EVENT ||
+  (Boolean(changeLog) &&
+    changeLog.items &&
+    changeLog.items.some((v) => fields.includes(v.field.toLowerCase()))) ||
+  (event === "issuelink_created" &&
+    body?.issueLink?.issueLinkType?.name === "jira_subtask_link")
+);
+```
+
+### THEN | Execute JavaScript function for Incoming Web Hook:
+
+```js
+const body = args.body,
   event = body.webhookEvent,
   changeLog = body.changelog,
   issue = body.issue;
