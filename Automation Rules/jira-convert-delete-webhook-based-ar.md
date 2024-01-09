@@ -92,6 +92,9 @@ const getItemFromLink = async (
 };
 
 const unlinkAndDeleteTpEntity = async (entity) => {
+  if (!entity) {
+    return;
+  }
   // await removeWebLink(entity.sourceType, entity.sourceId);
   await unlinkEntity(entity.sourceType, entity.sourceId, TP_TOOL);
   return [
