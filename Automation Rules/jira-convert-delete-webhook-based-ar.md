@@ -7,23 +7,24 @@ Rules works for all Jira profiles in the account.
 1.  In the integration webhooks delete event must be disabled so that integration stopped reacting on delete events and deleting rule for the sync of two issues.
 2.  In Targetprocess Settings > Automation Rules > Add new rule > WHEN "Incoming Web Hook"
 3.  Add filter to AND section and script to THEN.
-4.  This new webhook must be added in Jira for processing issue **delete** and **updte** events
+4.  This new webhook must be added in Jira for processing issue **delete** , **update** , **Issue link**:\*created\*\*
 
 ### AND | Filter section (Execute JavaScript filter againstIncoming Web Hook):
 
 ```js
 const body = args.body,
-  changeLog = body.changelog,
+  changeLog = Object(body).changelog,
   event = body.webhookEvent;
-console.log(args.body);
-console.log(args.body.changelog);
+// console.log(args.body);
 const DELETE_EVENT = "jira:issue_deleted";
 const fields = ["issuetype", "key"];
 return (
   event === DELETE_EVENT ||
   (Boolean(changeLog) &&
     changeLog.items &&
-    changeLog.items.some((v) => fields.includes(v.field.toLowerCase())))
+    changeLog.items.some((v) => fields.includes(v.field.toLowerCase()))) ||
+  (event === "issuelink_created" &&
+    body?.issueLink?.issueLinkType?.name === "jira_subtask_link")
 );
 ```
 
@@ -37,6 +38,7 @@ const body = args.body,
 const sync = context.getService("workSharing/v2");
 const utils = require("utils");
 const DELETE_EVENT = "jira:issue_deleted";
+const LINK_CREATED_EVENT = "issuelink_created";
 const ACCOUNT = Object(args).Account;
 const TP_TOOL = { id: ACCOUNT, type: "Targetprocess" };
 
@@ -84,21 +86,83 @@ const getSharedItem = async (profiles = [], id, type) => {
   return items.find((f) => Boolean(f));
 };
 
+const getItemFromLink = async (
+  profiles = [],
+  { id, sourceIssueId, destinationIssueId }
+) => {
+  const items = await Promise.all(
+    profiles.map(async (profile) => {
+      const jiraLink = await sync
+        .getProxy(profile.targetTool)
+        .getAsync(`rest/api/2/issueLink/${id}`)
+        .catch((e) => {
+          return;
+        });
+      const { inwardIssue, outwardIssue } = jiraLink || {};
+      if (
+        Number(inwardIssue?.id) === Number(sourceIssueId) &&
+        Number(outwardIssue?.id) === Number(destinationIssueId)
+      ) {
+        return [profile, outwardIssue];
+      }
+    })
+  );
+  return items.find((f) => Boolean(f)) || [];
+};
+
+const unlinkAndDeleteTpEntity = async (entity) => {
+  // await removeWebLink(entity.sourceType, entity.sourceId);
+  await unlinkEntity(entity.sourceType, entity.sourceId, TP_TOOL);
+  return [
+    utils.deleteResource(entity.sourceType, parseInt(entity.sourceId, 10)),
+  ];
+};
+
 if (event === DELETE_EVENT) {
-  console.log(event);
   const tpEntity = await getSharedItem(
     activeProfiles,
     issue.key,
     issue.fields.issuetype.id
   );
   if (tpEntity) {
-    await unlinkEntity(tpEntity.sourceType, tpEntity.sourceId, TP_TOOL);
-    return [
-      utils.deleteResource(
-        tpEntity.sourceType,
-        parseInt(tpEntity.sourceId, 10)
-      ),
-    ];
+    return await unlinkAndDeleteTpEntity(tpEntity);
+  }
+} else if (event === LINK_CREATED_EVENT) {
+  const issueLink = body?.issueLink;
+  if (!issueLink) {
+    return;
+  }
+
+  try {
+    const [profile, subTask] = await getItemFromLink(activeProfiles, issueLink);
+
+    if (profile && subTask) {
+      const jiraIssue = await sync
+        .getProxy(profile.targetTool)
+        .getAsync(`rest/api/2/issue/${subTask.key}?expand=changelog`);
+
+      const changedTypeRecord =
+        (jiraIssue?.changelog?.histories?.[0]?.items || []).find(
+          (record) => record.field === "issuetype"
+        ) || {};
+
+      const tpEntity =
+        changedTypeRecord["from"] &&
+        (await getSharedItem(
+          [profile],
+          subTask.key,
+          changedTypeRecord["from"]
+        ));
+
+      !tpEntity &&
+        console.log(`Faield to get TP entity for the item: "${subTask.key}"`);
+
+      if (tpEntity) {
+        return await unlinkAndDeleteTpEntity(tpEntity);
+      } else return;
+    }
+  } catch (e) {
+    console.log(e);
   }
 } else {
   const changedFields = changeLog.items;
@@ -132,7 +196,7 @@ if (event === DELETE_EVENT) {
       if (!jiraRemoteLinks) {
         return;
       }
-      console.log(link);
+
       const isAdded = jiraRemoteLinks.find(
         (webLink) =>
           (webLink.object.url || "").toLowerCase() === link.toLowerCase()
@@ -160,14 +224,7 @@ if (event === DELETE_EVENT) {
       !tpEntity &&
         console.log(`Faield to get TP entity for the item: "${key}"`);
       if (tpEntity) {
-        // await removeWebLink(tpEntity.sourceType, tpEntity.sourceId);
-        await unlinkEntity(tpEntity.sourceType, tpEntity.sourceId, TP_TOOL);
-        return [
-          utils.deleteResource(
-            tpEntity.sourceType,
-            parseInt(tpEntity.sourceId, 10)
-          ),
-        ];
+        return await unlinkAndDeleteTpEntity(tpEntity);
       } else return;
     }
   } catch (e) {
