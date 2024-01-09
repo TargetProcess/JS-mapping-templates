@@ -42,7 +42,7 @@ const LINK_CREATED_EVENT = "issuelink_created";
 const ACCOUNT = Object(args).Account;
 const TP_TOOL = { id: ACCOUNT, type: "Targetprocess" };
 
-let changedProject, changedKey, changedIssueType, type, key, tpEntity;
+let changedProject, changedKey, changedIssueType, type, key;
 
 const getEntity = async (id, type, tool) => {
   const [share] = await sync.getEntityShares({
@@ -126,6 +126,7 @@ if (event === DELETE_EVENT) {
   );
 
   return await unlinkAndDeleteTpEntity(tpEntity);
+
 } else if (event === LINK_CREATED_EVENT) {
   const issueLink = body?.issueLink;
   if (!issueLink) {
@@ -213,12 +214,11 @@ if (event === DELETE_EVENT) {
         (changedIssueType && changedIssueType["from"]) ||
         issue.fields.issuetype.id;
       key = (changedKey && changedKey["fromString"]) || issue.key;
-      tpEntity =
-        type && key
-          ? await getSharedItem(activeProfiles, key, type)
+      const tpEntity =
+        (type && key)
+          && await getSharedItem(activeProfiles, key, type)
           : undefined;
-      !tpEntity &&
-        console.log(`Faield to get TP entity for the item: "${key}"`);
+      (!tpEntity && key) && console.log(`Faield to get TP entity for the item: "${key}"`);
       return await unlinkAndDeleteTpEntity(tpEntity);
     }
   } catch (e) {
