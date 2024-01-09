@@ -7,7 +7,7 @@ Rules works for all Jira profiles in the account.
 1.  In the integration webhooks delete event must be disabled so that integration stopped reacting on delete events and deleting rule for the sync of two issues.
 2.  In Targetprocess Settings > Automation Rules > Add new rule > WHEN "Incoming Web Hook"
 3.  Add filter to AND section and script to THEN.
-4.  This new webhook must be added in Jira for processing issue **delete** , **update** , **Issue link**:\*created\*\*
+4.  This new webhook must be added in Jira for processing issue **delete** , **update** , **Issue link** : **created**
 
 ### AND | Filter section (Execute JavaScript filter againstIncoming Web Hook):
 
