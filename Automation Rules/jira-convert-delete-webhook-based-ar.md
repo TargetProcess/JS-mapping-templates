@@ -110,10 +110,14 @@ const getItemFromLink = async (
   return items.find((f) => Boolean(f)) || [];
 };
 
-const unlinkAndDeleteTpEntity = async (entity) => {
+const unlinkAndDeleteTpEntity = async (entity, key) => {
   if (!entity) {
     return;
   }
+
+  console.log(
+    `Going to remove tp item: "${entity.sourceType}" | ID:"${entity.sourceId}" for the issue "${key}"...`
+  );
   // await removeWebLink(entity.sourceType, entity.sourceId);
   await unlinkEntity(entity.sourceType, entity.sourceId, TP_TOOL);
   return [
@@ -128,7 +132,7 @@ if (event === DELETE_EVENT) {
     issue.fields.issuetype.id
   );
 
-  return await unlinkAndDeleteTpEntity(tpEntity);
+  return await unlinkAndDeleteTpEntity(tpEntity, issue.key);
 } else if (event === LINK_CREATED_EVENT) {
   const issueLink = body?.issueLink;
   if (!issueLink) {
@@ -158,7 +162,7 @@ if (event === DELETE_EVENT) {
 
       !tpEntity &&
         console.log(`Faield to get TP entity for the item: "${subTask.key}"`);
-      return await unlinkAndDeleteTpEntity(tpEntity);
+      return await unlinkAndDeleteTpEntity(tpEntity, subTask.key);
     }
   } catch (e) {
     console.log(e);
@@ -223,7 +227,7 @@ if (event === DELETE_EVENT) {
 
       !tpEntity &&
         console.log(`Faield to get TP entity for the item: "${key}"`);
-      return await unlinkAndDeleteTpEntity(tpEntity);
+      return await unlinkAndDeleteTpEntity(tpEntity, key);
     }
   } catch (e) {
     console.log(e);
