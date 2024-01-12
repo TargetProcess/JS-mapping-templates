@@ -1,4 +1,4 @@
-This mappings are only for the new "Team" field introduced by Jira.
+These mappings are only for the new "Team" field introduced by Jira.
 
 Team entity in Targetprocess should have a custom field "Jira Team Id".
 There is no API in JIRA to fetch all teams, if the field "Jira Team Id" is empty, the team cannot be found and assigned in JIRA.
