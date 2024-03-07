@@ -374,17 +374,13 @@ function ScopeHandler() {
   };
 
   this.getIssueShare = ({ sourceId, sourceType }) => {
-    return workSharing
-      .getEntityShares(
-        Object({
-          sourceId: sourceId,
-          sourceType: sourceType,
-          tool: sourceTool,
-        })
-      )
-      .catch((e) => {
-        console.log(e);
-      });
+    return workSharing.getEntityShares(
+      Object({
+        sourceId: sourceId,
+        sourceType: sourceType,
+        tool: sourceTool,
+      })
+    );
   };
 }
 const handler = new ScopeHandler();
