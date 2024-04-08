@@ -105,7 +105,7 @@ if (!destState) {
 const result = destState
   ? {
       kind: "Value",
-      value: statusToEntityStateMap.get(status),
+      value: destState,
     }
   : undefined;
 
