@@ -383,7 +383,6 @@ function ScopeHandler() {
     );
   };
 }
-const handler = new ScopeHandler();
 
 try {
   const result = await Promise.all(
@@ -394,6 +393,7 @@ try {
         console.error(`Faield to get issue by key "${e.sourceId}"`);
         return;
       }
+      const handler = new ScopeHandler();
       return handler.getScope(e).then((scope) => {
         handler.printLogs();
         return scope;
