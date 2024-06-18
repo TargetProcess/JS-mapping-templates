@@ -101,13 +101,13 @@ function TeamHandler(project, type) {
 
   this.createNewTeam = function () {
     this.consoleLogHandler(
-      `Creating ${this.type}... ${this.project.name}`,
+      `Creating ${this.type}... ${this.project.key}`,
       "warn"
     );
     return tpApi
       .postAsync(`api/v1/${this.type}?format=json`, {
         body: {
-          Name: this.project.name,
+          Name: this.project.key,
           [CUSTOM_FILED_NAME]: this.project.key,
         },
       })
