@@ -154,7 +154,7 @@ if (event === DELETE_EVENT) {
 
             return r.field === "issuetype" && descriptor.value === "Sub-task";
           });
-          if (subTaskRecord) {
+          if (subTaskRecord && !Object.keys(acc).length) {
             acc = { ...subTaskRecord };
           }
           return acc;
