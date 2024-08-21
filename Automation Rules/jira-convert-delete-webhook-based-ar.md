@@ -147,10 +147,20 @@ if (event === DELETE_EVENT) {
         .getProxy(profile.targetTool)
         .getAsync(`rest/api/2/issue/${subTask.key}?expand=changelog`);
 
-      const changedTypeRecord =
-        (jiraIssue?.changelog?.histories?.[0]?.items || []).find(
-          (record) => record.field === "issuetype"
-        ) || {};
+      const changedTypeRecord = (jiraIssue?.changelog?.histories || []).reduce(
+        (acc, record) => {
+          const subTaskRecord = record.items.find((r) => {
+            const descriptor = Object.getOwnPropertyDescriptor(r, "toString");
+
+            return r.field === "issuetype" && descriptor.value === "Sub-task";
+          });
+          if (subTaskRecord) {
+            acc = { ...subTaskRecord };
+          }
+          return acc;
+        },
+        {}
+      );
 
       const tpEntity =
         changedTypeRecord["from"] &&
