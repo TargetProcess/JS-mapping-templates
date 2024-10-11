@@ -55,7 +55,6 @@ const targetProcessApi = context.getService("targetprocess/api/v2");
 const creator = args.value.changed;
 const fieldId = args.targetField.id;
 const issueId = args.targetEntity.sourceId;
-let accountId = null;
 
 if (creator) {
   const { Email: email, Login: login } = creator;
@@ -78,7 +77,7 @@ if (creator) {
     }
   };
 
-  accountId = await getjiraUserAccountId(email, login);
+  const accountId = await getjiraUserAccountId(email, login);
 
   if (!accountId) {
     console.warn(
