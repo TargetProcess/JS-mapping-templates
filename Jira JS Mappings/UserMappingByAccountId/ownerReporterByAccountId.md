@@ -83,7 +83,7 @@ if (creator) {
     console.warn(
       `Was not able to find the user in Jira ${JSON.stringify(creator)}`
     );
-    return undefined;
+    return;
   }
 
   return {
