@@ -7,6 +7,10 @@ const workSharing = context.getService("workSharing/v2");
 const tpApi = workSharing.getProxy(args.sourceTool);
 const fieldId = args.sourceField.id;
 
+if (args.value.changed) {
+  return;
+}
+
 await tpApi.postAsync(
   `api/v1/${args.sourceEntity.entityType}/${args.sourceEntity.sourceId}`,
   {
@@ -22,6 +26,6 @@ Jira side:
 ```js
 return {
   kind: "Value",
-  value: args.value.changed.toString(),
+  value: args.value.changed,
 };
 ```
