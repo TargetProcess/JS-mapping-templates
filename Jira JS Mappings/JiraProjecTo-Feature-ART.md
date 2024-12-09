@@ -3,19 +3,27 @@
 ```js
 const apiV2 = context.getService("targetprocess/api/v2");
 const workSharing = context.getService("workSharing/v2");
-const tpApi = workSharing.getProxy(args.targetTool);
-const jiraApi = workSharing.getProxy(args.sourceTool);
+const {
+  targetTool,
+  sourceTool,
+  sourceField,
+  sourceEntity,
+  targetEntity,
+  targetField,
+  value: { changed: jiraProject },
+} = args;
 
-const fieldId = args.sourceField.id;
-const sourceIssue = args.sourceEntity;
-const targetEntity = args.targetEntity;
+if (!jiraProject) {
+  return;
+}
+
+const tpApi = workSharing.getProxy(targetTool);
+const fieldId = sourceField.id;
+
 const ENTITY_TYPE_NAME = "agilereleasetrain";
 const CREATE_MISSING_ITEM = true;
-const field = args.targetField;
 
-const jiraProject = args.value.changed;
-
-const unAssign = {
+const unassign = {
   kind: "Value",
   value: null,
 };
@@ -30,15 +38,19 @@ const createItem = async (name) => {
     })
     .then((data) => {
       if (data) {
+        const { Id: id, Name: name } = data;
         return {
-          id: data.Id,
-          name: data.Name,
+          id,
+          name,
         };
       }
     })
     .catch((e) => {
-      console.error(e);
-      return `Failed to create Team ${ENTITY_TYPE_NAME}`;
+      throw Error(
+        `Failed to create ${ENTITY_TYPE_NAME} ${ENTITY_TYPE_NAME} - ${JSON.stringify(
+          e
+        )}`
+      );
     });
 };
 
@@ -51,47 +63,55 @@ const getAssignedItems = async (tpEntity) => {
       return data ? data : null;
     })
     .catch((e) => {
-      console.error(e);
-      return null;
+      throw Error(`Failed to get assigned ART in ATP. ${JSON.stringify(e)}`);
     });
 };
 
-const getItemIdByNameById = async (tName) => {
+const getItemIdByNameById = async (name) => {
   const [item] = await apiV2.queryAsync(ENTITY_TYPE_NAME, {
     select: `{id:id, name:name}`,
-    where: `name="${tName}"`,
+    where: `name="${name}"`,
   });
   return item;
 };
 
-const cmds = await getAssignedItems(targetEntity).then(async (data) => {
-  if (!jiraProject) {
-    return unAssign;
-  }
-
-  const tpArt = await getItemIdByNameById(jiraProject.name).then(
-    async (data) => {
-      if (!data) {
-        console.warn(
-          `Failed to find ${ENTITY_TYPE_NAME} by name - "${jiraProject.name}" in ATP`
-        );
-        if (CREATE_MISSING_ITEM) {
-          return await createItem(jiraProject.name);
-        } else return undefined;
+try {
+  return await getAssignedItems(targetEntity).then(async (data) => {
+    const tpArt = await getItemIdByNameById(jiraProject.name).then(
+      async (data) => {
+        if (!data) {
+          console.warn(
+            `Failed to find ${ENTITY_TYPE_NAME} by name - "${jiraProject.name}" in ATP`
+          );
+          if (CREATE_MISSING_ITEM) {
+            return await createItem(jiraProject.name);
+          } else return undefined;
+        }
+        return data;
       }
-      return data;
+    );
+
+    if (tpArt) {
+      return {
+        kind: "Value",
+        value: tpArt,
+      };
+    } else {
+      return unassign;
     }
-  );
+  });
+} catch (e) {
+  console.error(e);
+}
+```
 
-  if (tpArt) {
-    return {
-      kind: "Value",
-      value: tpArt,
-    };
-  } else {
-    return unAssign;
-  }
-});
+### JS Comparator
 
-return cmds;
+```js
+const {
+  targetFieldValue: { toolStringValue: tpValue },
+  sourceFieldValue: { toolStringValue: jiraValue },
+} = args;
+const normValue = (value) => (value || "").trim().toLowerCase();
+return normValue(tpValue) === normValue(jiraValue);
 ```
