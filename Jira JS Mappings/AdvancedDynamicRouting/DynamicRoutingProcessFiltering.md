@@ -1,8 +1,8 @@
 ## Dynamic routing with the filter by process.
 
-Use-case:  
-№1 integration profile must work when entity pushed to any project with the "ScrumOne" process  
-№2 integration profile must work if we import to all other projects but not "ScrumOne"  
+Use-case:
+№1 integration profile must work when entity pushed to any project with the "ScrumOne" process
+№2 integration profile must work if we import to all other projects but not "ScrumOne"
 
 ```js
 const workSharing = context.getService("workSharing/v2");
@@ -12,7 +12,7 @@ const apiV2 = context.getService("targetprocess/api/v2");
 const customFieldName = 'Targetprocess Project';
 const status = 'In Progress';
 
-//Add processes comma separated for filterting 
+//Add processes comma separated for filterting
 const fitlerByProcesses = ['ScrumOne']
 
 //helper function to get issues in parallel, n - default value that defines a number of issues fetching in parallel.
@@ -88,3 +88,6 @@ to
 .filter(process => !fitlerByProcesses.some(s=> s.toUpperCase()===process.process.toUpperCase()))
 ```
 
+
+
+# example 1
