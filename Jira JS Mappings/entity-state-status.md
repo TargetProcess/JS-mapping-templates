@@ -111,3 +111,21 @@ const result = destState
 
 return result;
 ```
+
+Comparator:
+
+```js
+const entityStateToStatusMap  = new Map(
+    [
+    ["Open", "Backlog"],
+    ["Planned", "Planned"],
+    ["In Progress", "In Progress"],
+    ["Coded", "In Progress"],
+    ["In Testing", "In Progress"],
+    ["Done", "Done"]
+    ].map(mapping => [mapping[0].toUpperCase(), mapping[1]])
+)
+const sourceState = args.sourceFieldValue.toolStringValue
+const targetStatus = entityStateToStatusMap.get(sourceState.toUpperCase())
+return targetStatus === args.targetFieldValue.toolStringValue
+```
