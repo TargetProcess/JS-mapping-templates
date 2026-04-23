@@ -1,7 +1,6 @@
-```js
-
 #### ADO > ATP
 
+```js
 const {
   targetField,
   sourceEntity,
@@ -60,10 +59,9 @@ try {
 }
 ```
 
-```js
-
 #### ATP > ADO
 
+```js
 const [atpUser] = args.value.changed || [];
 
 const getFieldModification = (value = null) => {
