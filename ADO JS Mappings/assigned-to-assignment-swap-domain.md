@@ -1,4 +1,7 @@
 ```js
+
+#### ADO > ATP
+
 const {
   targetField,
   sourceEntity,
@@ -55,4 +58,37 @@ try {
     new Error(`ERROR IN JS MAPPING: ${e.message || e.body}`),
   );
 }
+```
+
+```js
+
+#### ATP > ADO
+
+const [atpUser] = args.value.changed || [];
+
+const getFieldModification = (value = null) => {
+  return {
+    kind: "Update",
+    fieldModifications: [
+      {
+        fieldDef: {
+          id: "System.AssignedTo",
+          meta: {
+            kind: "FieldMeta",
+          },
+        },
+        value,
+      },
+    ],
+  };
+};
+
+if (!atpUser) return getFieldModification();
+
+const {
+  user: { email },
+} = atpUser;
+return getFieldModification(
+  email.toLowerCase().replace("@blackbaud.com", "@blackbaud.me"),
+);
 ```
